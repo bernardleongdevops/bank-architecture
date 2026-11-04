@@ -29,8 +29,14 @@ services:
       # browser and the services validate against.
       KC_HOSTNAME_URL: http://localhost:8080
       KC_HOSTNAME_STRICT: "false"
+      # Disable theme caching so custom-theme edits show on restart (dev only).
+      KC_SPI_THEME_STATIC_MAX_AGE: "-1"
+      KC_SPI_THEME_CACHE_THEMES: "false"
+      KC_SPI_THEME_CACHE_TEMPLATES: "false"
     volumes:
       - ./keycloak/realm-digital-bank.json:/opt/keycloak/data/import/realm-digital-bank.json:ro
+      # Mount the custom FinNova login theme into Keycloak.
+      - ./keycloak/themes:/opt/keycloak/themes:ro
     ports:
       - "8080:8080"
     healthcheck:

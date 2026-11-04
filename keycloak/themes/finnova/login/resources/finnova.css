@@ -1,0 +1,95 @@
+/* FinNova Digital-Bank - RP green login theme.
+   Palette: forest green #0a7d3e, deeper green #0b3d24, RP lime #8bc53f.
+   Served at /resources/<ver>/login/finnova/finnova.css and loaded last so it wins. */
+
+/* Page background: one consistent forest green (no gradient, no triangles). */
+html,
+body,
+body.login-pf,
+.login-pf body,
+.login-pf-page {
+  background-image: none !important;
+  background: #0a7d3e !important;
+  background-color: #0a7d3e !important;
+}
+
+/* Brand/heading text (realm display name) above the card. */
+#kc-header-wrapper,
+.login-pf-page .login-pf-header h1 {
+  color: #ffffff !important;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 3px rgba(0,0,0,.35);
+}
+
+/* Login card: lime top accent + rounded corners. */
+.card-pf,
+.login-pf-page .card-pf {
+  border-top: 5px solid #8bc53f !important;
+  border-radius: 10px !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,.25) !important;
+}
+
+/* Card heading: plain dark-green text, no coloured bar behind it.
+   The green "highlight" was the page background showing through the card's
+   header area, so force that area (and the title) to a clean white background. */
+.card-pf,
+.login-pf-page .card-pf,
+#kc-content,
+#kc-content-wrapper,
+#kc-form-wrapper,
+#kc-form {
+  background: #ffffff !important;
+  background-image: none !important;
+}
+
+/* The card's internal title ("Sign in to your account"): dark-green text on the
+   white card, with no coloured bar behind it. */
+#kc-page-title {
+  color: #0b3d24 !important;
+  background: transparent !important;
+  background-image: none !important;
+  text-shadow: none !important;
+}
+
+/* Primary sign-in button: forest green, lime on hover/focus. */
+.btn-primary,
+input[type="submit"].btn-primary,
+button[type="submit"].btn-primary,
+#kc-login {
+  background: #0a7d3e !important;
+  background-image: none !important;
+  border-color: #0a7d3e !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active,
+#kc-login:hover,
+#kc-login:focus {
+  background: #8bc53f !important;
+  border-color: #8bc53f !important;
+  color: #0b3d24 !important;
+}
+
+/* Links in forest green. */
+a,
+#kc-registration a,
+#kc-info-wrapper a {
+  color: #0a7d3e !important;
+}
+a:hover {
+  color: #0b3d24 !important;
+}
+
+/* Input focus ring in lime. */
+input:focus,
+.pf-c-form-control:focus,
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus {
+  border-color: #8bc53f !important;
+  box-shadow: 0 0 0 2px rgba(139,197,63,.35) !important;
+  outline: none !important;
+}
