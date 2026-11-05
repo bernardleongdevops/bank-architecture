@@ -1,0 +1,242 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Extend `PaymentCompletedEvent` and update in-process references": [
+      {
+        "executionId": "93ad2bbb-92ce-4e10-bcf3-9b391f0b4c11",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793776278617
+      },
+      {
+        "executionId": "93ad2bbb-92ce-4e10-bcf3-9b391f0b4c11",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793777230122
+      }
+    ],
+    "1.2 Add the `event_outbox` migration and JPA mapping in payment-service": [
+      {
+        "executionId": "93ad2bbb-92ce-4e10-bcf3-9b391f0b4c11",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793776279661
+      },
+      {
+        "executionId": "93ad2bbb-92ce-4e10-bcf3-9b391f0b4c11",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793777230778
+      }
+    ],
+    "1.3 Write migration + mapping validation test": [
+      {
+        "executionId": "93ad2bbb-92ce-4e10-bcf3-9b391f0b4c11",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793777236246
+      },
+      {
+        "executionId": "93ad2bbb-92ce-4e10-bcf3-9b391f0b4c11",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793777241810
+      }
+    ],
+    "1.4 Implement `OutboxEventPublisher` and wire it via config": [
+      {
+        "executionId": "93ad2bbb-92ce-4e10-bcf3-9b391f0b4c11",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793777236961
+      },
+      {
+        "executionId": "93ad2bbb-92ce-4e10-bcf3-9b391f0b4c11",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793777242673
+      }
+    ],
+    "1.5 Enable and configure the outbox in payment-service": [
+      {
+        "executionId": "93ad2bbb-92ce-4e10-bcf3-9b391f0b4c11",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793777248198
+      },
+      {
+        "executionId": "93ad2bbb-92ce-4e10-bcf3-9b391f0b4c11",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793777255225
+      }
+    ],
+    "1.6 Write publisher unit test": [
+      {
+        "executionId": "93ad2bbb-92ce-4e10-bcf3-9b391f0b4c11",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793777249186
+      },
+      {
+        "executionId": "93ad2bbb-92ce-4e10-bcf3-9b391f0b4c11",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793777256165
+      }
+    ],
+    "1.7 Write atomicity integration tests": [
+      {
+        "executionId": "93ad2bbb-92ce-4e10-bcf3-9b391f0b4c11",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793777250183
+      },
+      {
+        "executionId": "93ad2bbb-92ce-4e10-bcf3-9b391f0b4c11",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793777257113
+      }
+    ],
+    "1. Outbox foundation in payment-service (opt-in publisher, atomic write)": [
+      {
+        "executionId": "93ad2bbb-92ce-4e10-bcf3-9b391f0b4c11",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793777255383
+      }
+    ],
+    "2.1 Add optimistic locking and balance methods to account-service `Account`": [
+      {
+        "executionId": "42f8946a-b80e-4ab8-bfc4-e943c37a3053",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793777434549
+      },
+      {
+        "executionId": "42f8946a-b80e-4ab8-bfc4-e943c37a3053",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793778046592
+      }
+    ],
+    "2.2 Add `processed_events` migration and mapping in account-service": [
+      {
+        "executionId": "42f8946a-b80e-4ab8-bfc4-e943c37a3053",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793777435235
+      },
+      {
+        "executionId": "42f8946a-b80e-4ab8-bfc4-e943c37a3053",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793778044606
+      }
+    ],
+    "3.1 Add `processed_events` migration and mapping in transaction-service": [
+      {
+        "executionId": "42f8946a-b80e-4ab8-bfc4-e943c37a3053",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793777436237
+      },
+      {
+        "executionId": "42f8946a-b80e-4ab8-bfc4-e943c37a3053",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793778046734
+      }
+    ],
+    "2.3 Add read-only outbox access and payload deserialization in account-service": [
+      {
+        "executionId": "42f8946a-b80e-4ab8-bfc4-e943c37a3053",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793778051980
+      },
+      {
+        "executionId": "42f8946a-b80e-4ab8-bfc4-e943c37a3053",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793778057628
+      }
+    ],
+    "3.2 Add read-only outbox access and payload deserialization in transaction-service": [
+      {
+        "executionId": "42f8946a-b80e-4ab8-bfc4-e943c37a3053",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793778053042
+      },
+      {
+        "executionId": "42f8946a-b80e-4ab8-bfc4-e943c37a3053",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793778058496
+      }
+    ],
+    "2.4 Implement and wire `AccountOutboxPoller`": [
+      {
+        "executionId": "42f8946a-b80e-4ab8-bfc4-e943c37a3053",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793778063373
+      },
+      {
+        "executionId": "42f8946a-b80e-4ab8-bfc4-e943c37a3053",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793778068782
+      }
+    ],
+    "3.3 Implement and wire `TransactionOutboxPoller`": [
+      {
+        "executionId": "42f8946a-b80e-4ab8-bfc4-e943c37a3053",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793778064047
+      },
+      {
+        "executionId": "42f8946a-b80e-4ab8-bfc4-e943c37a3053",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793778069628
+      }
+    ],
+    "2. account-service consumes outbox, updates balances (idempotent)": [
+      {
+        "executionId": "42f8946a-b80e-4ab8-bfc4-e943c37a3053",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793778068846
+      }
+    ],
+    "3. transaction-service consumes outbox, appends statement history (idempotent)": [
+      {
+        "executionId": "42f8946a-b80e-4ab8-bfc4-e943c37a3053",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793778069702
+      }
+    ],
+    "2.5 Write balance + idempotency integration tests": [
+      {
+        "executionId": "42f8946a-b80e-4ab8-bfc4-e943c37a3053",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793778075784
+      },
+      {
+        "executionId": "42f8946a-b80e-4ab8-bfc4-e943c37a3053",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793778084914
+      }
+    ],
+    "2.6 Keep existing account-service tests green": [
+      {
+        "executionId": "42f8946a-b80e-4ab8-bfc4-e943c37a3053",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793778077188
+      },
+      {
+        "executionId": "42f8946a-b80e-4ab8-bfc4-e943c37a3053",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793778086343
+      }
+    ],
+    "3.4 Write history + idempotency integration tests": [
+      {
+        "executionId": "42f8946a-b80e-4ab8-bfc4-e943c37a3053",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793778078141
+      },
+      {
+        "executionId": "42f8946a-b80e-4ab8-bfc4-e943c37a3053",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793778086960
+      }
+    ],
+    "3.5 Keep existing transaction-service tests green": [
+      {
+        "executionId": "42f8946a-b80e-4ab8-bfc4-e943c37a3053",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793778078983
+      },
+      {
+        "executionId": "42f8946a-b80e-4ab8-bfc4-e943c37a3053",
+        "chatSessionId": "sess_a4d58ec3-2036-45c6-a21d-b20292510179",
+        "timestamp": 1793778083954
+      }
+    ]
+  }
+}

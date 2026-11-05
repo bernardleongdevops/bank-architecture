@@ -29,6 +29,17 @@ spring:
 provider:
   identity: keycloak
 
+# Outbox consumer configuration.
+#   poll-delay-ms: how often transaction-service scans the shared event_outbox for
+#                  new completed-transfer rows to project into statement history.
+#   schema: the database (MySQL schema) that OWNS the single shared event_outbox.
+#           This is payment-service's database (sandbox_payment); transaction-service
+#           reads it cross-database, read-only. Overridable via OUTBOX_SCHEMA so
+#           tests point it at their in-memory DB schema.
+outbox:
+  poll-delay-ms: 1000
+  schema: ${OUTBOX_SCHEMA:sandbox_payment}
+
 sandbox:
   identity:
     issuer-uri: ${SANDBOX_ISSUER_URI:http://localhost:8080/realms/digital-bank}

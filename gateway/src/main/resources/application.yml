@@ -44,6 +44,12 @@ spring:
                 - Path=/api/v1/payments/**
               filters:
                 - StripPrefix=2
+            - id: ai-service
+              uri: ${AI_URI:http://localhost:8086}
+              predicates:
+                - Path=/api/v1/ai/**
+              filters:
+                - StripPrefix=2
 
             # Per-service OpenAPI specs, exposed through the gateway so the
             # aggregated Swagger UI can load each one from a single origin.
@@ -71,6 +77,12 @@ spring:
                 - Path=/v3/api-docs/payment-service
               filters:
                 - RewritePath=/v3/api-docs/payment-service, /v3/api-docs
+            - id: ai-docs
+              uri: ${AI_URI:http://localhost:8086}
+              predicates:
+                - Path=/v3/api-docs/ai-service
+              filters:
+                - RewritePath=/v3/api-docs/ai-service, /v3/api-docs
 
 # Sandbox API keys + rate limiting (self-service access control at the edge).
 # Keys are demo values for the teaching sandbox - override via env/config for real use.
@@ -97,6 +109,8 @@ springdoc:
         url: /v3/api-docs/transaction-service
       - name: payment-service
         url: /v3/api-docs/payment-service
+      - name: ai-service
+        url: /v3/api-docs/ai-service
 
 management:
   endpoints:

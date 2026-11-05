@@ -1,9 +1,22 @@
-# One-command startup for the whole sandbox (optional convenience over native-first).
+﻿# One-command startup for the whole sandbox (optional convenience over native-first).
 # Usage:  docker compose up --build
 #
 # Note on issuer-uri: services validate the JWT "iss" claim against the issuer.
 # We pin Keycloak's hostname to "keycloak" and set KC_HOSTNAME_URL so the issuer
 # it advertises matches what the services (and the gateway) validate against.
+#
+# Outbox propagation end-to-end check (Option A, shared event_outbox):
+#   1. Obtain a JWT for a customer that owns ACC-1001 (e.g. via the Keycloak realm).
+#   2. POST a transfer ACC-1001 -> ACC-1002 for 100 through the gateway/payment-service
+#      (payment-service has provider.events=outbox, so it stages one event_outbox row
+#      in sandbox_payment inside the transfer transaction).
+#   3. Within ~1s (outbox.poll-delay-ms) the consumers converge, reading
+#      sandbox_payment.event_outbox cross-database (OUTBOX_SCHEMA=sandbox_payment):
+#        - GET /accounts        -> ACC-1001 is -100 and ACC-1002 is +100
+#        - GET /transactions    -> both accounts show the new DEBIT / CREDIT legs
+#   All three databases (sandbox_payment/_account/_transaction) are auto-created on
+#   the one MySQL server, so the cross-database read-only SELECT resolves; root has
+#   the SELECT grant. Consumers never write event_outbox.
 services:
   mysql:
     image: mysql:8
@@ -74,6 +87,13 @@ services:
     environment:
       <<: *svc-env
       DB_NAME: sandbox_account
+      # Shared Transactional Outbox location (Option A): the single event_outbox is
+      # owned and written only by payment-service in its own database. This consumer
+      # reads it cross-database, read-only, from that schema. All three databases
+      # live on the same MySQL server, so "sandbox_payment.event_outbox" resolves in
+      # one connection. The poller is resilient to the table not existing yet
+      # (payment-service startup lag): it skips the cycle and retries on the next tick.
+      OUTBOX_SCHEMA: sandbox_payment
     depends_on:
       mysql:
         condition: service_healthy
@@ -89,6 +109,9 @@ services:
     environment:
       <<: *svc-env
       DB_NAME: sandbox_transaction
+      # Shared Transactional Outbox location (Option A): read the single
+      # payment-owned event_outbox cross-database, read-only. See account-service.
+      OUTBOX_SCHEMA: sandbox_payment
     depends_on:
       mysql:
         condition: service_healthy
@@ -112,6 +135,42 @@ services:
     ports:
       - "8085:8085"
 
+  ai-assistant-service:
+    build:
+      context: .
+      dockerfile: ai-assistant-service/Dockerfile
+    # No database: the AI assistant holds no state and reads/writes banking data
+    # only through the gateway on-behalf-of the user, so it inherits none of the
+    # DB_* / OUTBOX_SCHEMA env the datasource-backed services use. It only needs
+    # the OIDC coordinates to validate inbound JWTs and the outbound gateway config.
+    environment:
+      # Validate inbound JWTs against the same issuer as the other services
+      # (trust localhost as advertised; fetch signing keys over the Docker network).
+      SANDBOX_ISSUER_URI: http://localhost:8080/realms/digital-bank
+      SANDBOX_JWKS_URI: http://keycloak:8080/realms/digital-bank/protocol/openid-connect/certs
+      # OpenAI key is passed through from the host env; never hardcoded here.
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      # The assistant calls BACK through the gateway (service name "gateway" on the
+      # compose network) to reach account/transaction/customer/payment services
+      # on-behalf-of the user, reusing the existing business logic and ownership checks.
+      AI_GATEWAY_BASE_URL: http://gateway:8081/api/v1
+      # Sandbox API key the gateway requires on the X-Sandbox-Key header (matches
+      # the demo key configured in the gateway's application.yml).
+      AI_SANDBOX_KEY: demo-key-123
+      AI_MODEL: ${AI_MODEL:-gpt-4o-mini}
+      # Phase 2 (transfers) - OFF by default. Set AI_TRANSFERS_ENABLED=true and a strong,
+      # stable AI_CONFIRMATION_SECRET in the host env / .env to enable the propose+confirm
+      # handshake. Empty secret => random per-instance (tokens won't survive a restart).
+      AI_TRANSFERS_ENABLED: ${AI_TRANSFERS_ENABLED:-false}
+      AI_CONFIRMATION_SECRET: ${AI_CONFIRMATION_SECRET:-}
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      gateway:
+        condition: service_started
+    ports:
+      - "8086:8086"
+
   gateway:
     build:
       context: .
@@ -123,6 +182,7 @@ services:
       ACCOUNT_URI: http://account-service:8083
       TRANSACTION_URI: http://transaction-service:8084
       PAYMENT_URI: http://payment-service:8085
+      AI_URI: http://ai-assistant-service:8086
     depends_on:
       - customer-service
       - account-service

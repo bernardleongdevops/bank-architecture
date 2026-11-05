@@ -14,3 +14,9 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+
+# In tests the shared outbox lives in the single H2 database. H2's default schema
+# is PUBLIC, so point the read-only outbox query at PUBLIC.event_outbox (created by
+# the test-only V5 migration) rather than the production default sandbox_payment.
+outbox:
+  schema: PUBLIC

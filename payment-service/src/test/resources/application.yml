@@ -15,5 +15,11 @@ spring:
     enabled: true
     locations: classpath:db/migration
 
+# Default tests to the in-process publisher (matching pre-outbox behaviour);
+# outbox-specific tests opt in with @TestPropertySource(provider.events=outbox).
 provider:
   aml: simulated
+  events: in-process
+
+outbox:
+  poll-delay-ms: 1000

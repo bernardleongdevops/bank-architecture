@@ -1,0 +1,18 @@
+# Test profile. No datasource (this service has none). The resource-server
+# issuer-uri is supplied so ResourceServerSecurityConfig activates; a mock
+# JwtDecoder bean is provided by the tests so no network call is made.
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/digital-bank
+
+ai:
+  model: gpt-4o-mini
+  max-tool-iterations: 5
+  sandbox-key: demo-key-123
+  gateway:
+    base-url: http://localhost:8081/api/v1
+  openai:
+    api-key: ""

@@ -96,9 +96,15 @@ public class PaymentService {
         ledger.save(new LedgerEntry(txnRef, toAccountNumber, to.getCustomerRef(),
                 "CREDIT", amount, to.getCurrency(), description, fromAccountNumber));
 
-        // Publish the completion event (in-process in v1).
+        // Publish the completion event. The customer refs come from the already-loaded
+        // account entities (no cross-schema read) so downstream consumers can populate
+        // their NOT NULL customer_ref columns. When provider.events=outbox this insert
+        // joins the transfer's @Transactional, so the event commits atomically with the
+        // money movement.
         eventPublisher.publish(new PaymentCompletedEvent(
-                txnRef, fromAccountNumber, toAccountNumber, amount, from.getCurrency(), Instant.now()));
+                txnRef, fromAccountNumber, toAccountNumber,
+                from.getCustomerRef(), to.getCustomerRef(),
+                amount, from.getCurrency(), Instant.now()));
 
         return new TransferResult(txnRef, "COMPLETED", fromAccountNumber, toAccountNumber,
                 amount, from.getCurrency(), aml.reason());
