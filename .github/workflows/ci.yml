@@ -67,7 +67,7 @@ jobs:
           uses: actions/checkout@v4
   
         - name: Build and deploy backend
-          run: bash deploy/deploy.local.sh
+          run: bash deploy/deploy-local.sh
    
 #  deploy:
 #    runs-on: ubuntu-latest
