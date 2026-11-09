@@ -29,8 +29,13 @@ spring:
 # Pluggable adapters
 provider:
   aml: simulated
-  events: in-process
+  events: outbox
   identity: keycloak
+
+# Transactional outbox: consumers poll on this fixed delay (ms). payment-service
+# is the write-owner; it stages one event_outbox row per completed transfer.
+outbox:
+  poll-delay-ms: 1000
 
 sandbox:
   compliance:

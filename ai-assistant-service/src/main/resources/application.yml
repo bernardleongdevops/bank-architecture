@@ -1,0 +1,59 @@
+server:
+  port: 8086
+
+spring:
+  application:
+    name: ai-assistant-service
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${SANDBOX_ISSUER_URI:http://localhost:8080/realms/digital-bank}
+          jwk-set-uri: ${SANDBOX_JWKS_URI:${SANDBOX_ISSUER_URI:http://localhost:8080/realms/digital-bank}/protocol/openid-connect/certs}
+
+provider:
+  identity: keycloak
+
+sandbox:
+  identity:
+    issuer-uri: ${SANDBOX_ISSUER_URI:http://localhost:8080/realms/digital-bank}
+    customer-claim: customer_ref
+
+# AI assistant configuration. Nothing secret is hardcoded: the OpenAI key comes
+# from the OPENAI_API_KEY environment variable and defaults to empty (so the
+# service starts and tests run with a stubbed LlmClient).
+ai:
+  model: ${AI_MODEL:gpt-4o-mini}
+  max-tool-iterations: ${AI_MAX_TOOL_ITERATIONS:5}
+  max-output-tokens: ${AI_MAX_OUTPUT_TOKENS:512}
+  # Phase gate for money movement. Defaults to FALSE so the deployed service stays
+  # read-only until a transfer capability is explicitly enabled. When true, the
+  # proposeTransfer tool is exposed to the model and the confirmation handshake can
+  # execute a transfer. No makeTransfer tool is ever exposed to the model.
+  transfers-enabled: ${AI_TRANSFERS_ENABLED:false}
+  sandbox-key: ${AI_SANDBOX_KEY:demo-key-123}
+  gateway:
+    base-url: ${AI_GATEWAY_BASE_URL:http://localhost:8081/api/v1}
+  openai:
+    api-key: ${OPENAI_API_KEY:}
+    base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
+  # Confirmation-token signing (Phase 2). The dev default secret below is clearly
+  # NOT for production - override AI_CONFIRMATION_SECRET in any real deployment. If
+  # left empty, a random per-instance secret is generated at startup (confirmations
+  # will not survive a restart).
+  confirmation:
+    secret: ${AI_CONFIRMATION_SECRET:dev-only-confirmation-secret-change-me}
+    ttl-seconds: ${AI_CONFIRMATION_TTL_SECONDS:300}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

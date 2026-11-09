@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -42,6 +43,15 @@ public class Account {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
+
+    /**
+     * Optimistic-lock version. Guards the outbox poller's debit/credit writes
+     * against concurrent/stale updates; a stale write triggers an optimistic-lock
+     * failure so the enclosing poll transaction rolls back and retries later.
+     */
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version;
 
     protected Account() {
         // for JPA
@@ -88,5 +98,19 @@ public class Account {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    /** Decreases the balance by {@code amount} (source leg of a transfer). */
+    public void debit(BigDecimal amount) {
+        this.balance = this.balance.subtract(amount);
+    }
+
+    /** Increases the balance by {@code amount} (destination leg of a transfer). */
+    public void credit(BigDecimal amount) {
+        this.balance = this.balance.add(amount);
     }
 }

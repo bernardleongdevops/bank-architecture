@@ -1,6 +1,9 @@
 {
   "realm": "digital-bank",
   "enabled": true,
+  "displayName": "FinNova Digital-Bank",
+  "displayNameHtml": "FinNova Digital-Bank",
+  "loginTheme": "finnova",
   "sslRequired": "none",
   "registrationAllowed": false,
   "roles": {

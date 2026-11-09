@@ -1,0 +1,13 @@
+-- Widen ledger_entries.transaction_ref from VARCHAR(36) to VARCHAR(50).
+--
+-- A real transfer reference is TXN-<uuid> = 40 chars ("TXN-" + 36-char UUID),
+-- which overflowed the original VARCHAR(36) from V1__create_ledger.sql. Against
+-- real MySQL this made every ledger insert fail with
+--   Data truncation: Data too long for column 'transaction_ref' at row 1
+-- (SQL 1406 / SQLState 22001), so the poller retried the row forever and
+-- statement history stayed empty. 50 matches payment-service's ledger and
+-- comfortably fits a 40-char TXN-<uuid> reference.
+--
+-- MODIFY COLUMN is used (not MODIFY) because it applies cleanly on BOTH
+-- H2 in MySQL mode and MySQL 8.
+ALTER TABLE ledger_entries MODIFY COLUMN transaction_ref VARCHAR(50) NOT NULL;
