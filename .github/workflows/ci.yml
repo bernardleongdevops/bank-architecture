@@ -40,10 +40,40 @@ jobs:
   # Stubbed, manual-only deployment path. Wired but inert until container images
   # and a target environment exist (Task 12). Kept here so the pipeline shape is
   # ready and visible without doing anything yet.
-  deploy:
-    runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' }}
-    needs: build-and-test
-    steps:
-      - name: Placeholder deploy step
-        run: echo "Deploy is not wired yet. Container images and a target environment arrive in Task 12."
+  deploy-local:
+      name: Deploy backend to laptop VM
+      needs: build-and-test
+
+      if: >-
+        github.ref == 'refs/heads/main' &&
+        (
+          github.event_name == 'push' ||
+          github.event_name == 'workflow_dispatch'
+        )
+
+      runs-on: [self-hosted, linux, x64, bank-backend]
+
+      permissions:
+        contents: read
+
+      concurrency:
+        group: backend-local-deployment
+        cancel-in-progress: false
+
+      timeout-minutes: 90
+
+      steps:
+        - name: Check out tested commit
+          uses: actions/checkout@v4
+  
+        - name: Build and deploy backend
+          run: bash deploy/deploy-local.sh
+   
+#  deploy:
+#    runs-on: ubuntu-latest
+#    if: ${{ github.event_name == 'workflow_dispatch' }}
+#    needs: build-and-test
+#    steps:
+#      - name: Placeholder deploy step
+#        run: echo "Deploy is not wired yet. Container images and a target environment arrive in Task 12."
+#
