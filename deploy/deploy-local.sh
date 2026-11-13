@@ -172,4 +172,25 @@ do
 done
 
 printf '%s\n' "$SHA" > "$ROOT/backend-current"
+
+# Retain the 3 most recent release directories and remove older ones.
+KEEP_RELEASES=3
+CURRENT_SHA="$(cat "$ROOT/backend-current")"
+
+mapfile -t OLD_RELEASES < <(
+  ls -1dt "$ROOT"/releases/backend-* 2>/dev/null | tail -n +$((KEEP_RELEASES + 1))
+)
+
+for dir in "${OLD_RELEASES[@]}"; do
+  if [[ "$dir" != "$ROOT/releases/backend-$CURRENT_SHA" ]]; then
+    echo "Removing old release directory: $dir"
+    rm -rf "$dir"
+  fi
+done
+
+# Prune dangling images and build cache older than 7 days (volumes are untouched).
+docker image prune -f --filter "until=168h" >/dev/null 2>&1 || true
+docker builder prune -f --filter "until=168h" >/dev/null 2>&1 || true
+
+echo "Backend deployment and disk cleanup completed."
 echo "Backend deployment completed."
