@@ -1,4 +1,4 @@
-name: CI
+name: CI_WithAI_Agent
 
 on:
   push:
