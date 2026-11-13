@@ -90,3 +90,12 @@ A dedicated isolation branch (`test/ai-triage-agent`) can be maintained to verif
    ```
 3. Open **GitHub > Actions**, select the workflow run, click **Summary** in the top-left sidebar, and confirm the **🤖 Gemini DevOps Triage** section renders with `escalate_to_human` and the exact failing test details.
 4. Switch back to `main` for normal development (`git checkout main`).
+
+---
+
+## Self-Hosted VM Disk Retention Policy
+
+To prevent disk exhaustion on the laptop VM (`bank-backend`), `deploy/deploy-local.sh` runs an automated cleanup routine immediately after updating `/opt/bank-lab/backend-current` on a successful deployment:
+
+* **Release Retention (`KEEP_RELEASES=3`):** Keeps the **3 most recent** `/opt/bank-lab/releases/backend-$SHA` directories so `rollback_to_previous` always has intact `compose.local.yml` files on disk, while deleting older release folders (explicitly skipping the active `backend-current` commit).
+* **Stale Docker Cache Pruning:** Removes dangling Docker images and build cache older than **7 days** (`until=168h`) without touching persistent `mysql-data` or `keycloak-data` volumes.
