@@ -105,14 +105,66 @@ jobs:
           set -o pipefail
           bash deploy/deploy-local.sh 2>&1 | tee deploy.log
 
-      - name: AI Triage (Self-Hosted Deployment)
+      - name: AI Triage & Auto-Remediation (Self-Hosted Deployment)
         if: steps.deploy_step.outcome == 'failure'
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
+          ROOT="/opt/bank-lab"
+          FAILED_RELEASE="$ROOT/releases/backend-${{ github.sha }}"
+
+          # Append recent container logs so Gemini sees why Spring Boot or Keycloak failed
+          if [ -f "$FAILED_RELEASE/compose.local.yml" ]; then
+            echo "=== CONTAINER LOGS ===" >> deploy.log
+            docker compose --project-name bank-backend \
+              --env-file "$ROOT/secrets/backend.env" \
+              -f "$FAILED_RELEASE/compose.local.yml" \
+              logs --tail=60 >> deploy.log 2>&1 || true
+          fi
+
           python3 -m pip install -q google-genai pydantic
           python3 .github/scripts/devops_agent.py local_deploy deploy.log
 
+          ACTION=$(jq -r '.recommended_action' remediation_plan.json)
+          CONFIDENCE=$(jq -r '.confidence' remediation_plan.json)
+          CAUSE=$(jq -r '.root_cause' remediation_plan.json)
+          NOTES=$(jq -r '.suggested_fix_notes' remediation_plan.json)
+
           echo "### 🤖 Gemini Deployment Triage" >> $GITHUB_STEP_SUMMARY
-          jq -r '"- **Root Cause:** \(.root_cause)\n- **Action:** `\(.recommended_action)`\n- **Fix Notes:** \(.suggested_fix_notes)"' remediation_plan.json >> $GITHUB_STEP_SUMMARY
-          exit 1
+          echo "- **Root Cause:** $CAUSE" >> $GITHUB_STEP_SUMMARY
+          echo "- **Recommended Action:** \`$ACTION\` (Confidence: $CONFIDENCE)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Developer Notes:** $NOTES" >> $GITHUB_STEP_SUMMARY
+
+          # Execute safe allowlisted remediation on the laptop VM
+          if [[ "$ACTION" == "prune_docker_and_retry" ]] && awk "BEGIN {exit !($CONFIDENCE >= 0.85)}"; then
+            echo "Pruning unused Docker build cache and retrying deployment..."
+            docker builder prune -f
+            docker image prune -f
+            bash deploy/deploy-local.sh
+
+          elif [[ "$ACTION" == "restart_compose_services" ]] && awk "BEGIN {exit !($CONFIDENCE >= 0.85)}"; then
+            echo "Waiting for slow containers to finish initializing..."
+            docker compose --project-name bank-backend \
+              --env-file "$ROOT/secrets/backend.env" \
+              -f "$FAILED_RELEASE/compose.local.yml" \
+              up -d --no-build --wait --wait-timeout 300
+            printf '%s\n' "${{ github.sha }}" > "$ROOT/backend-current"
+
+          elif [[ "$ACTION" == "rollback_to_previous" ]] && [ -f "$ROOT/backend-current" ]; then
+            PREV_SHA=$(cat "$ROOT/backend-current")
+            PREV_RELEASE="$ROOT/releases/backend-$PREV_SHA"
+            echo "Rolling back bank-backend to last healthy release: $PREV_SHA"
+            echo "- **Auto-Rollback Status:** Restored previous healthy release \`$PREV_SHA\`." >> $GITHUB_STEP_SUMMARY
+
+            if [ -f "$PREV_RELEASE/compose.local.yml" ]; then
+              docker compose --project-name bank-backend \
+                --env-file "$ROOT/secrets/backend.env" \
+                -f "$PREV_RELEASE/compose.local.yml" \
+                up -d --no-build --wait --wait-timeout 300
+            fi
+            # Exit 1 after rollback so GitHub still flags the broken commit as failed
+            exit 1
+          else
+            echo "Escalating deployment failure to human review."
+            exit 1
+          fi
