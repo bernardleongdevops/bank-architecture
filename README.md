@@ -209,3 +209,11 @@ stays configuration-only via the `PROVIDER_*` keys. Validate with
 A GitHub Actions workflow ([`.github/workflows/ci.yml`](.github/workflows/ci.yml))
 builds the monorepo and runs all tests on every push and pull request using
 JDK 25 (tests use H2, so no MySQL is needed in CI).
+
+## CI/CD & AI Pipeline Triage
+
+This repository uses GitHub Actions for automated Maven builds, unit testing, and self-hosted VM deployments, paired with a **Gemini 3.5 Flash-Lite** failure triage and auto-remediation agent.
+
+* **Full Setup, Guardrails & Remediation Guide:** [README_AI_AGENT.md](./README_AI_AGENT.md)
+* **Workflow Configuration:** [`.github/workflows/ci.yml`](./.github/workflows/ci.yml)
+* **Triage Agent Script:** [`.github/scripts/devops_agent.py`](./.github/scripts/devops_agent.py)
