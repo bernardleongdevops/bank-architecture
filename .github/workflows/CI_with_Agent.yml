@@ -1,0 +1,118 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch: {}
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 25 (Temurin) with Maven cache
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+
+      - name: Make Maven wrapper executable
+        run: chmod +x ./mvnw
+
+      - name: Build and run all tests
+        id: maven_verify
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          ./mvnw -B -ntp verify 2>&1 | tee maven_build.log
+
+      - name: AI Triage & Auto-Remediation (Build/Test)
+        if: steps.maven_verify.outcome == 'failure'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python3 -m pip install -q google-genai pydantic
+          python3 .github/scripts/devops_agent.py maven_build maven_build.log
+
+          ACTION=$(jq -r '.recommended_action' remediation_plan.json)
+          CONFIDENCE=$(jq -r '.confidence' remediation_plan.json)
+          CAUSE=$(jq -r '.root_cause' remediation_plan.json)
+          NOTES=$(jq -r '.suggested_fix_notes' remediation_plan.json)
+
+          echo "### 🤖 Gemini DevOps Triage" >> $GITHUB_STEP_SUMMARY
+          echo "- **Root Cause:** $CAUSE" >> $GITHUB_STEP_SUMMARY
+          echo "- **Recommended Action:** \`$ACTION\` (Confidence: $CONFIDENCE)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Developer Notes:** $NOTES" >> $GITHUB_STEP_SUMMARY
+
+          # Safe auto-remediation allowlist
+          if [[ "$ACTION" == "purge_m2_cache_and_retry" ]] && awk "BEGIN {exit !($CONFIDENCE >= 0.85)}"; then
+            echo "Purging corrupted ~/.m2 repository and retrying Maven build..."
+            rm -rf ~/.m2/repository
+            ./mvnw -B -ntp verify
+          elif [[ "$ACTION" == "retry_maven" ]] && awk "BEGIN {exit !($CONFIDENCE >= 0.85)}"; then
+            echo "Retrying transient Maven failure..."
+            ./mvnw -B -ntp verify
+          else
+            echo "Escalating to human review."
+            exit 1
+          fi
+
+      - name: Upload test reports & AI plan
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-and-ai-reports
+          path: |
+            **/target/surefire-reports/*.xml
+            remediation_plan.json
+          if-no-files-found: ignore
+
+  deploy-local:
+    name: Deploy backend to laptop VM
+    needs: build-and-test
+
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (
+        github.event_name == 'push' ||
+        github.event_name == 'workflow_dispatch'
+      )
+
+    runs-on: [self-hosted, linux, x64, bank-backend]
+
+    permissions:
+      contents: read
+
+    concurrency:
+      group: backend-local-deployment
+      cancel-in-progress: false
+
+    timeout-minutes: 90
+
+    steps:
+      - name: Check out tested commit
+        uses: actions/checkout@v4
+
+      - name: Build and deploy backend
+        id: deploy_step
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          bash deploy/deploy-local.sh 2>&1 | tee deploy.log
+
+      - name: AI Triage (Self-Hosted Deployment)
+        if: steps.deploy_step.outcome == 'failure'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python3 -m pip install -q google-genai pydantic
+          python3 .github/scripts/devops_agent.py local_deploy deploy.log
+
+          echo "### 🤖 Gemini Deployment Triage" >> $GITHUB_STEP_SUMMARY
+          jq -r '"- **Root Cause:** \(.root_cause)\n- **Action:** `\(.recommended_action)`\n- **Fix Notes:** \(.suggested_fix_notes)"' remediation_plan.json >> $GITHUB_STEP_SUMMARY
+          exit 1
